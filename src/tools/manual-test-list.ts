@@ -1,38 +1,10 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { validateTestCase, type TestCase, type Priority } from './manual-test-validate';
+import { validateTestCase } from './manual-test-validate';
+import { TestCase, TestCaseFile, ListFilter, SortField, ListResult, Priority } from '../models';
 
-export interface TestCaseFile {
-  meta: TestCase['meta'];
-  scenario: TestCase['scenario'];
-  precondition?: TestCase['precondition'];
-  notes?: TestCase['notes'];
-  fileName: string;
-  filePath: string;
-}
-
-export interface ListFilter {
-  feature?: string;
-  priority?: Priority;
-  tags?: string[];
-  author?: string;
-}
-
-export type SortField = 'id' | 'lastUpdated' | 'priority' | 'feature';
-
-export interface ListSuccessResult {
-  success: true;
-  testCases: TestCaseFile[];
-  totalCount: number;
-  warnings: string[];
-}
-
-export interface ListErrorResult {
-  success: false;
-  error: string;
-}
-
-export type ListResult = ListSuccessResult | ListErrorResult;
+// Re-export types for backward compatibility
+export type { TestCaseFile, ListFilter, SortField, ListResult } from '../models';
 
 /**
  * Check if directory exists

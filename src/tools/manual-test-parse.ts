@@ -1,30 +1,8 @@
-import { validateTestCase, type TestCase, type ValidationResult } from './manual-test-validate';
+import { validateTestCase } from './manual-test-validate';
+import { TestCase, ValidationResult, ProjectMeta, ProcessedSteps, ParseResult } from '../models';
 
-export interface ProjectMeta {
-  test_data?: Record<string, any>;
-  environments?: Record<string, string>;
-  [key: string]: any;
-}
-
-export interface ProcessedSteps {
-  given: string[];
-  when: string[];
-  then: string[];
-}
-
-export interface ParseSuccessResult {
-  success: true;
-  testCase: TestCase;
-  processedSteps: ProcessedSteps;
-  warnings: string[];
-}
-
-export interface ParseErrorResult {
-  success: false;
-  error: string;
-}
-
-export type ParseResult = ParseSuccessResult | ParseErrorResult;
+// Re-export types for backward compatibility
+export type { ProjectMeta, ProcessedSteps, ParseResult } from '../models';
 
 // Variable substitution strategies
 interface VariableResolver {
