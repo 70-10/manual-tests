@@ -119,6 +119,14 @@ dist
 # Serverless directories
 .serverless/
 
+# Manual test generated files
+tests/manual-tests/test-cases/
+tests/manual-tests/test-results/
+project-meta.yml
+
+# direnv
+.envrc
+
 # FuseBox cache
 .fusebox/
 
