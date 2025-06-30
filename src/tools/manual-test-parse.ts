@@ -1,5 +1,5 @@
 import { validateTestCase } from './manual-test-validate';
-import { TestCase, ValidationResult, ProjectMeta, ProcessedSteps, ParseResult } from '../models';
+import { TestCase, ValidationResult, ProjectMeta, ProcessedSteps, ParseResult, ParseSuccessResult, ParseErrorResult } from '../models';
 
 // Re-export types for backward compatibility
 export type { ProjectMeta, ProcessedSteps, ParseResult } from '../models';
