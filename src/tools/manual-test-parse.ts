@@ -1,7 +1,7 @@
 import { validateTestCase, type TestCase, type ValidationResult } from './manual-test-validate';
 
 export interface ProjectMeta {
-  test_data?: any;
+  test_data?: Record<string, any>;
   environments?: Record<string, string>;
   [key: string]: any;
 }
@@ -26,61 +26,110 @@ export interface ParseErrorResult {
 
 export type ParseResult = ParseSuccessResult | ParseErrorResult;
 
-/**
- * Generate current timestamp
- */
-function generateTimestamp(): string {
-  return Date.now().toString();
+// Variable substitution strategies
+interface VariableResolver {
+  canResolve(variableName: string): boolean;
+  resolve(variableName: string, projectMeta?: ProjectMeta): string | undefined;
 }
 
 /**
- * Generate today's date in YYYY-MM-DD format
+ * Built-in date/time variable resolver
  */
-function generateToday(): string {
-  return new Date().toISOString().split('T')[0];
+class BuiltInVariableResolver implements VariableResolver {
+  canResolve(variableName: string): boolean {
+    return variableName === 'today' || variableName === 'timestamp';
+  }
+
+  resolve(variableName: string): string | undefined {
+    switch (variableName) {
+      case 'today':
+        return new Date().toISOString().split('T')[0];
+      case 'timestamp':
+        return Date.now().toString();
+      default:
+        return undefined;
+    }
+  }
 }
 
 /**
- * Get nested property value from object using dot notation
+ * Project metadata variable resolver
  */
-function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => {
-    return current && current[key] !== undefined ? current[key] : undefined;
-  }, obj);
+class ProjectMetaVariableResolver implements VariableResolver {
+  canResolve(variableName: string): boolean {
+    return variableName.includes('.');
+  }
+
+  resolve(variableName: string, projectMeta?: ProjectMeta): string | undefined {
+    if (!projectMeta) return undefined;
+    
+    const value = this.getNestedValue(projectMeta, variableName);
+    return value !== undefined ? String(value) : undefined;
+  }
+
+  private getNestedValue(obj: any, path: string): any {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : undefined;
+    }, obj);
+  }
 }
+
+/**
+ * Variable resolver factory
+ */
+class VariableResolverRegistry {
+  private resolvers: VariableResolver[] = [
+    new BuiltInVariableResolver(),
+    new ProjectMetaVariableResolver()
+  ];
+
+  resolve(variableName: string, projectMeta?: ProjectMeta): string | undefined {
+    for (const resolver of this.resolvers) {
+      if (resolver.canResolve(variableName)) {
+        const result = resolver.resolve(variableName, projectMeta);
+        if (result !== undefined) {
+          return result;
+        }
+      }
+    }
+    return undefined;
+  }
+}
+
+/**
+ * Variable substitution service
+ */
+class VariableSubstitutionService {
+  private registry = new VariableResolverRegistry();
+
+  substitute(text: string, projectMeta?: ProjectMeta): { result: string; warnings: string[] } {
+    const warnings: string[] = [];
+    
+    const result = text.replace(/\{\{([^}]+)\}\}/g, (match, variableName) => {
+      const trimmedName = variableName.trim();
+      const resolved = this.registry.resolve(trimmedName, projectMeta);
+      
+      if (resolved !== undefined) {
+        return resolved;
+      }
+      
+      // Variable not found
+      warnings.push(`Variable not found: ${trimmedName}`);
+      return match; // Return original placeholder
+    });
+    
+    return { result, warnings };
+  }
+}
+
+// Global instance
+const substitutionService = new VariableSubstitutionService();
 
 /**
  * Substitute variables in a string
  */
 function substituteVariables(text: string, projectMeta?: ProjectMeta): { result: string; warnings: string[] } {
-  const warnings: string[] = [];
-  
-  const result = text.replace(/\{\{([^}]+)\}\}/g, (match, variableName) => {
-    const trimmedName = variableName.trim();
-    
-    // Built-in variables
-    if (trimmedName === 'today') {
-      return generateToday();
-    }
-    
-    if (trimmedName === 'timestamp') {
-      return generateTimestamp();
-    }
-    
-    // Project meta variables
-    if (projectMeta && trimmedName.includes('.')) {
-      const value = getNestedValue(projectMeta, trimmedName);
-      if (value !== undefined) {
-        return String(value);
-      }
-    }
-    
-    // Variable not found
-    warnings.push(`Variable not found: ${trimmedName}`);
-    return match; // Return original placeholder
-  });
-  
-  return { result, warnings };
+  return substitutionService.substitute(text, projectMeta);
 }
 
 /**
@@ -100,44 +149,68 @@ function processSteps(steps: string[], projectMeta?: ProjectMeta): { processed: 
 }
 
 /**
- * Parse test case YAML and process variables
+ * Create error result
  */
-export function parseTestCase(yamlContent: string, projectMeta?: ProjectMeta): ParseResult {
-  // First validate the YAML
-  const validationResult: ValidationResult = validateTestCase(yamlContent);
-  
-  if (!validationResult.isValid) {
-    return {
-      success: false,
-      error: validationResult.errors.join('; ')
-    };
-  }
-  
-  if (!validationResult.parsedData) {
-    return {
-      success: false,
-      error: 'No parsed data available'
-    };
-  }
-  
-  const testCase = validationResult.parsedData;
-  const allWarnings: string[] = [];
-  
-  // Process scenario steps
-  const givenResult = processSteps(testCase.scenario.given, projectMeta);
-  const whenResult = processSteps(testCase.scenario.when, projectMeta);
-  const thenResult = processSteps(testCase.scenario.then, projectMeta);
-  
-  allWarnings.push(...givenResult.warnings, ...whenResult.warnings, ...thenResult.warnings);
-  
+function createErrorResult(error: string): ParseErrorResult {
+  return { success: false, error };
+}
+
+/**
+ * Create success result
+ */
+function createSuccessResult(
+  testCase: TestCase,
+  processedSteps: ProcessedSteps,
+  warnings: string[]
+): ParseSuccessResult {
   return {
     success: true,
     testCase,
-    processedSteps: {
+    processedSteps,
+    warnings
+  };
+}
+
+/**
+ * Parse test case YAML and process variables
+ */
+export function parseTestCase(yamlContent: string, projectMeta?: ProjectMeta): ParseResult {
+  try {
+    // Validate YAML structure
+    const validationResult = validateTestCase(yamlContent);
+    
+    if (!validationResult.isValid) {
+      return createErrorResult(validationResult.errors.join('; '));
+    }
+    
+    if (!validationResult.parsedData) {
+      return createErrorResult('No parsed data available');
+    }
+    
+    const testCase = validationResult.parsedData;
+    const allWarnings: string[] = [];
+    
+    // Process scenario steps with error handling
+    const givenResult = processSteps(testCase.scenario.given, projectMeta);
+    const whenResult = processSteps(testCase.scenario.when, projectMeta);
+    const thenResult = processSteps(testCase.scenario.then, projectMeta);
+    
+    allWarnings.push(
+      ...givenResult.warnings,
+      ...whenResult.warnings,
+      ...thenResult.warnings
+    );
+    
+    const processedSteps: ProcessedSteps = {
       given: givenResult.processed,
       when: whenResult.processed,
       then: thenResult.processed
-    },
-    warnings: allWarnings
-  };
+    };
+    
+    return createSuccessResult(testCase, processedSteps, allWarnings);
+    
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error during parsing';
+    return createErrorResult(`Parse error: ${message}`);
+  }
 }
