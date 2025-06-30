@@ -213,7 +213,12 @@ scenario:
       
       expect(result.success).toBe(true);
       if (result.success) {
-        const dates = result.testCases.map(tc => tc.meta.lastUpdated);
+        const dates = result.testCases.map(tc => {
+          if (tc.meta.lastUpdated instanceof Date) {
+            return tc.meta.lastUpdated.toISOString().split('T')[0];
+          }
+          return tc.meta.lastUpdated;
+        });
         expect(dates).toEqual(['2025-06-30', '2025-06-29', '2025-06-28']);
       }
     });
