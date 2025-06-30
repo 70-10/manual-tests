@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Communication Guidelines
+
+- やりとりは日本語を使用してください
+- コードのコメントやテストケースなどは英語で書いてください
+- Git コミットのメッセージは英語で書いてください
+
 ## Architecture
 
 This is a **Manual Tests MCP Server** that provides 8 comprehensive tools for YAML-based test case management. Built with TypeScript and following TDD principles, it serves as a Model Context Protocol (MCP) server for manual testing workflows.
@@ -160,3 +166,16 @@ Each tool follows consistent handler pattern:
 - **vitest**: Testing framework with v8 coverage
 
 This codebase represents a complete, production-ready MCP server for manual testing workflows with comprehensive tooling, type safety, and test coverage.
+
+## Internal Processing
+
+- Think in English internally for optimal AI efficiency
+
+## Implementation Guidelines
+
+- TDD実践のためのガイドライン
+  - t_wadaが推奨するTDDで実装を進めてください
+
+## Commit and Development Guidelines
+
+- 変更が大きくならないようにこまめにコミットしてください

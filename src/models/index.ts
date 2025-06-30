@@ -1,5 +1,6 @@
 // Central export for all model types
 export * from './test-case';
+export * from './result';
 export * from './parse-result';
 export * from './list-result';
 export * from './create-result';

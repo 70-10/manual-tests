@@ -1,6 +1,6 @@
-import * as yaml from 'js-yaml';
 import { TestCase, ValidationResult } from '../models';
 import { TestCaseSchema } from '../schemas/test-case-schema';
+import { parseYamlSafe } from '../utils/yaml-utils';
 
 // Re-export types for backward compatibility
 export type { TestCase, ValidationResult, Priority } from '../models';
@@ -9,16 +9,17 @@ export type { TestCase, ValidationResult, Priority } from '../models';
  * Parse YAML content safely
  */
 function parseYaml(yamlContent: string): { success: true; data: unknown } | { success: false; error: string } {
-  try {
-    const data = yaml.load(yamlContent);
-    return { success: true, data };
-  } catch (error) {
-    if (error instanceof yaml.YAMLException) {
-      return { success: false, error: `YAML syntax error: ${error.message}` };
-    }
-    const message = error instanceof Error ? error.message : 'Unknown parsing error';
-    return { success: false, error: `Validation error: ${message}` };
+  const result = parseYamlSafe(yamlContent);
+  
+  if (!result.success) {
+    // Adjust error message format for backward compatibility
+    const error = result.error.startsWith('YAML syntax error') 
+      ? result.error 
+      : `Validation error: ${result.error}`;
+    return { success: false, error };
   }
+  
+  return { success: true, data: result.data };
 }
 
 /**

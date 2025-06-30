@@ -2,8 +2,8 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as yaml from 'js-yaml';
 import type { ProjectMetaTemplate } from '../../models';
+import { stringifyYaml } from '../../utils/yaml-utils';
 
 /**
  * Interface for file system operations
@@ -46,13 +46,17 @@ export class DefaultFileSystemManager implements FileSystemManager {
   }
 
   async writeProjectMeta(filePath: string, projectMeta: ProjectMetaTemplate): Promise<void> {
-    const yamlContent = yaml.dump(projectMeta, {
+    const yamlResult = stringifyYaml(projectMeta, {
       indent: 2,
       noRefs: true,
       sortKeys: false
     });
 
-    await fs.writeFile(filePath, yamlContent);
+    if (!yamlResult.success) {
+      throw new Error(`Failed to serialize project meta: ${yamlResult.error}`);
+    }
+
+    await fs.writeFile(filePath, yamlResult.yaml);
   }
 
   async writeTextFile(filePath: string, content: string): Promise<void> {
