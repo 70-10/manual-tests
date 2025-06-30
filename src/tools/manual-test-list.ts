@@ -61,15 +61,32 @@ async function getYamlFiles(dirPath: string): Promise<string[]> {
 }
 
 /**
- * Parse test case file
+ * Result type for file parsing
  */
-async function parseTestCaseFile(filePath: string): Promise<{ testCase: TestCaseFile; warnings: string[] } | null> {
+type ParseFileResult = 
+  | { success: true; testCase: TestCaseFile; warnings: string[] }
+  | { success: false; error: string };
+
+/**
+ * Parse test case file with detailed error information
+ */
+async function parseTestCaseFile(filePath: string): Promise<ParseFileResult> {
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     const validation = validateTestCase(content);
     
-    if (!validation.isValid || !validation.parsedData) {
-      return null; // Invalid test case, will be reported as warning
+    if (!validation.isValid) {
+      return {
+        success: false,
+        error: `Invalid test case format: ${validation.errors.join(', ')}`
+      };
+    }
+    
+    if (!validation.parsedData) {
+      return {
+        success: false,
+        error: 'No parsed data available'
+      };
     }
     
     const testCase: TestCaseFile = {
@@ -78,48 +95,97 @@ async function parseTestCaseFile(filePath: string): Promise<{ testCase: TestCase
       filePath
     };
     
-    return { testCase, warnings: [] };
+    return {
+      success: true,
+      testCase,
+      warnings: []
+    };
   } catch (error) {
-    return null; // File read error, will be reported as warning
+    return {
+      success: false,
+      error: `File read error: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+// Filter strategies
+interface FilterStrategy {
+  apply(testCase: TestCaseFile): boolean;
+}
+
+class FeatureFilter implements FilterStrategy {
+  constructor(private feature: string) {}
+  
+  apply(testCase: TestCaseFile): boolean {
+    return testCase.meta.feature === this.feature;
+  }
+}
+
+class PriorityFilter implements FilterStrategy {
+  constructor(private priority: Priority) {}
+  
+  apply(testCase: TestCaseFile): boolean {
+    return testCase.meta.priority === this.priority;
+  }
+}
+
+class TagsFilter implements FilterStrategy {
+  constructor(private tags: string[]) {}
+  
+  apply(testCase: TestCaseFile): boolean {
+    if (!testCase.meta.tags || testCase.meta.tags.length === 0) {
+      return false;
+    }
+    return this.tags.some(tag => testCase.meta.tags?.includes(tag));
+  }
+}
+
+class AuthorFilter implements FilterStrategy {
+  constructor(private author: string) {}
+  
+  apply(testCase: TestCaseFile): boolean {
+    return testCase.meta.author === this.author;
   }
 }
 
 /**
- * Apply filters to test cases
+ * Create filter strategies from filter options
+ */
+function createFilterStrategies(filter: ListFilter): FilterStrategy[] {
+  const strategies: FilterStrategy[] = [];
+  
+  if (filter.feature) {
+    strategies.push(new FeatureFilter(filter.feature));
+  }
+  
+  if (filter.priority) {
+    strategies.push(new PriorityFilter(filter.priority));
+  }
+  
+  if (filter.tags && filter.tags.length > 0) {
+    strategies.push(new TagsFilter(filter.tags));
+  }
+  
+  if (filter.author) {
+    strategies.push(new AuthorFilter(filter.author));
+  }
+  
+  return strategies;
+}
+
+/**
+ * Apply filters to test cases using strategy pattern
  */
 function applyFilters(testCases: TestCaseFile[], filter: ListFilter): TestCaseFile[] {
-  return testCases.filter(testCase => {
-    // Feature filter
-    if (filter.feature && testCase.meta.feature !== filter.feature) {
-      return false;
-    }
-    
-    // Priority filter
-    if (filter.priority && testCase.meta.priority !== filter.priority) {
-      return false;
-    }
-    
-    // Tags filter
-    if (filter.tags && filter.tags.length > 0) {
-      if (!testCase.meta.tags || testCase.meta.tags.length === 0) {
-        return false;
-      }
-      // Check if test case has at least one of the required tags
-      const hasRequiredTag = filter.tags.some(tag => 
-        testCase.meta.tags?.includes(tag)
-      );
-      if (!hasRequiredTag) {
-        return false;
-      }
-    }
-    
-    // Author filter
-    if (filter.author && testCase.meta.author !== filter.author) {
-      return false;
-    }
-    
-    return true;
-  });
+  const strategies = createFilterStrategies(filter);
+  
+  if (strategies.length === 0) {
+    return testCases;
+  }
+  
+  return testCases.filter(testCase => 
+    strategies.every(strategy => strategy.apply(testCase))
+  );
 }
 
 /**
@@ -190,11 +256,11 @@ export async function listTestCases(
     
     for (const filePath of yamlFiles) {
       const result = await parseTestCaseFile(filePath);
-      if (result) {
+      if (result.success) {
         testCases.push(result.testCase);
         warnings.push(...result.warnings);
       } else {
-        warnings.push(`Failed to parse test case file: ${path.basename(filePath)}`);
+        warnings.push(`${path.basename(filePath)}: ${result.error}`);
       }
     }
     
