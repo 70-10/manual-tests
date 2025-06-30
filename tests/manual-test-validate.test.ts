@@ -40,7 +40,8 @@ meta:
       
       const result = validateTestCase(invalidYaml);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/YAML syntax error/i));
+      expect(result.errors[0]).toMatch(/YAML syntax error:/);
+      expect(result.errors[0]).toMatch(/unexpected end of the stream/);
     });
   });
 
@@ -55,7 +56,7 @@ meta:
       
       const result = validateTestCase(yamlWithoutId);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/meta\.id.*required/i));
+      expect(result.errors).toContain('meta.id: Required');
     });
 
     it('should fail when meta.title is missing', () => {
@@ -68,7 +69,7 @@ meta:
       
       const result = validateTestCase(yamlWithoutTitle);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/meta\.title.*required/i));
+      expect(result.errors).toContain('meta.title: Required');
     });
 
     it('should fail when scenario is missing', () => {
@@ -82,7 +83,7 @@ meta:
       
       const result = validateTestCase(yamlWithoutScenario);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/scenario.*required/i));
+      expect(result.errors).toContain('scenario: Required');
     });
 
     it('should fail when scenario.given is missing', () => {
@@ -101,7 +102,7 @@ scenario:
       
       const result = validateTestCase(yamlWithoutGiven);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/scenario\.given.*required/i));
+      expect(result.errors).toContain('scenario.given: Required');
     });
   });
 
@@ -125,7 +126,7 @@ scenario:
       
       const result = validateTestCase(yamlWithInvalidPriority);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/priority.*must be one of/i));
+      expect(result.errors).toContain('meta.priority: Priority must be one of: high, medium, low');
     });
 
     it('should validate test ID format', () => {
@@ -146,7 +147,7 @@ scenario:
       
       const result = validateTestCase(yamlWithInvalidId);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/id.*format.*TC-[A-Z-]+-\d+/i));
+      expect(result.errors).toContain('meta.id: ID format must be TC-[A-Z-]+-[NUMBER]');
     });
 
     it('should validate tags format', () => {
@@ -168,7 +169,7 @@ scenario:
       
       const result = validateTestCase(yamlWithInvalidTags);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/tags.*must be an array/i));
+      expect(result.errors).toContain('meta.tags: Expected array, received string');
     });
   });
 
@@ -190,7 +191,7 @@ scenario:
       
       const result = validateTestCase(yamlWithInvalidScenario);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/scenario\.given.*must be an array/i));
+      expect(result.errors).toContain('scenario.given: Expected array, received string');
     });
 
     it('should require non-empty arrays for given, when, then', () => {
@@ -210,7 +211,7 @@ scenario:
       
       const result = validateTestCase(yamlWithEmptyScenario);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringMatching(/scenario\.given.*cannot be empty/i));
+      expect(result.errors).toContain('scenario.given: Given cannot be empty');
     });
   });
 
