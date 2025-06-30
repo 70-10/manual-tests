@@ -1,21 +1,21 @@
 # Manual Tests MCP Server
 
-YAML-based manual test case management MCP server with 8 comprehensive tools for test automation workflows.
+YAML-based manual test case management MCP server with 11 comprehensive tools for test automation workflows.
 
 ## Overview
 
-A **Model Context Protocol (MCP) Server** that provides 8 powerful tools for manual testing workflows. Built with TypeScript following TDD principles, it serves as a comprehensive solution for YAML-based test case management, execution tracking, and report generation.
+A **Model Context Protocol (MCP) Server** that provides 11 powerful tools for manual testing workflows. Built with TypeScript following TDD principles, it serves as a comprehensive solution for YAML-based test case management, execution tracking, and report generation.
 
 ## Features
 
-- **8 Comprehensive Tools** for complete test lifecycle management
+- **11 Comprehensive Tools** for complete test lifecycle management
 - **YAML-based Test Cases** with structured validation and parsing
 - **Advanced Filtering & Search** capabilities across test cases and results
 - **Template-based Test Creation** with multiple built-in templates
 - **Project Initialization** with configurable settings
 - **Results Management** with cleanup and reporting tools
 - **Type-safe Architecture** with Zod validation schemas
-- **Comprehensive Test Coverage** (206+ tests, 85%+ coverage)
+- **Comprehensive Test Coverage** (252+ tests, 85%+ coverage)
 
 ## Installation
 
@@ -38,7 +38,7 @@ node dist/mcp-server.js
 
 ### Available Tools
 
-The MCP server exposes 8 tools via JSON-RPC 2.0 protocol:
+The MCP server exposes 11 tools via JSON-RPC 2.0 protocol:
 
 #### 1. manual_test_validate
 Validates YAML test case structure and syntax.
@@ -260,6 +260,158 @@ Cleans up test result directories based on criteria.
 }
 ```
 
+#### 9. manual_test_help
+Get comprehensive help information for all manual test tools.
+
+**Parameters:**
+- No parameters required
+
+**Example:**
+```json
+{
+  "name": "manual_test_help",
+  "arguments": {}
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "tools": [
+      {
+        "name": "manual_test_validate",
+        "description": "Validate a test case YAML content for syntax and structure",
+        "usage": {
+          "example": "{ \"yamlContent\": \"meta:\\n  id: TC-001\\n  title: Test\" }",
+          "inputDescription": "YAML content string to validate",
+          "outputDescription": "Validation result with isValid boolean and error details"
+        }
+      }
+    ],
+    "guidelines": {
+      "general": ["Always validate YAML content before parsing", "Use consistent directory structures"],
+      "errorHandling": ["Check the success field in all tool responses", "Handle validation errors by examining the errors array"]
+    },
+    "clientGuidance": {
+      "recommendedPatterns": ["Initialize project structure first", "Create test cases using templates"],
+      "outputHandling": ["Save YAML content from manual_test_create to .yml files", "Process validation errors to provide user feedback"]
+    }
+  }
+}
+```
+
+#### 10. manual_test_workflow
+Get workflow information and recommended usage patterns.
+
+**Parameters:**
+- No parameters required
+
+**Example:**
+```json
+{
+  "name": "manual_test_workflow",
+  "arguments": {}
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "workflows": [
+      {
+        "name": "Project Setup Workflow",
+        "description": "Initialize a new manual testing project with proper structure",
+        "steps": [
+          {
+            "tool": "manual_test_init",
+            "description": "Initialize project structure and configuration",
+            "order": 1
+          }
+        ],
+        "recommendedOrder": ["manual_test_init", "manual_test_create", "manual_test_validate"]
+      }
+    ],
+    "integrationPatterns": [
+      {
+        "name": "Validation Chain",
+        "description": "Chain validation and parsing for comprehensive test case checking",
+        "toolSequence": ["manual_test_validate", "manual_test_parse"]
+      }
+    ],
+    "commonUseCases": [
+      {
+        "title": "Setting up a New Project",
+        "description": "Complete setup for a new manual testing project",
+        "steps": ["Initialize project structure", "Create sample test cases"],
+        "tools": ["manual_test_init", "manual_test_create"]
+      }
+    ]
+  }
+}
+```
+
+#### 11. manual_test_schema
+Get detailed schema information for YAML/JSON structures and variable substitution.
+
+**Parameters:**
+- No parameters required
+
+**Example:**
+```json
+{
+  "name": "manual_test_schema",
+  "arguments": {}
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "testCaseSchema": {
+      "required": ["meta", "scenario"],
+      "optional": ["precondition", "postcondition"],
+      "properties": {
+        "meta": {
+          "type": "object",
+          "required": ["id", "title", "feature", "priority"]
+        },
+        "scenario": {
+          "type": "object",
+          "properties": {
+            "given": {"type": "array", "items": {"type": "string"}},
+            "when": {"type": "array", "items": {"type": "string"}},
+            "then": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "variableSubstitution": {
+      "syntax": {
+        "basic": "${variable_name}",
+        "nested": "${object.property}",
+        "environment": "${env.VARIABLE_NAME}"
+      },
+      "examples": [
+        "Navigate to ${env.BASE_URL}/login",
+        "Enter username: ${credentials.user.email}"
+      ]
+    },
+    "formats": {
+      "yaml": {
+        "conventions": ["Use 2-space indentation", "Use lowercase with underscores for keys"],
+        "indentation": "2 spaces"
+      }
+    }
+  }
+}
+```
+
 ## Development
 
 ### Building
@@ -271,7 +423,7 @@ npm run build
 ### Testing
 
 ```bash
-# Run all tests (206+ tests)
+# Run all tests (252+ tests)
 npm test
 
 # Run with coverage
@@ -296,7 +448,7 @@ npm run dev
 
 - **MCP Server** (`src/mcp-server.ts`) - JSON-RPC 2.0 server exposing all tools
 - **Models Layer** (`src/models/`) - Type definitions and interfaces
-- **Tools Layer** (`src/tools/`) - Implementation of all 8 tools
+- **Tools Layer** (`src/tools/`) - Implementation of all 11 tools
 - **Schema Layer** (`src/schemas/`) - Zod validation schemas
 
 ### Strategy Pattern Implementation

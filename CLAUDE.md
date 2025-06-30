@@ -10,12 +10,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-This is a **Manual Tests MCP Server** that provides 8 comprehensive tools for YAML-based test case management. Built with TypeScript and following TDD principles, it serves as a Model Context Protocol (MCP) server for manual testing workflows.
+This is a **Manual Tests MCP Server** that provides 11 comprehensive tools for YAML-based test case management. Built with TypeScript and following TDD principles, it serves as a Model Context Protocol (MCP) server for manual testing workflows.
 
 **Core Architecture:**
-- **MCP Server** (`src/mcp-server.ts`) - Central server exposing all 8 tools via JSON-RPC 2.0 protocol
+- **MCP Server** (`src/mcp-server.ts`) - Central server exposing all 11 tools via JSON-RPC 2.0 protocol
 - **Models Layer** (`src/models/`) - Complete type definitions and interfaces for all operations
-- **Tools Layer** (`src/tools/`) - Implementation of all 8 tools with Strategy pattern architecture
+- **Tools Layer** (`src/tools/`) - Implementation of all 11 tools with Strategy pattern architecture
 - **Schema Layer** (`src/schemas/`) - Zod validation schemas for type safety
 
 **Available Tools:**
@@ -27,6 +27,9 @@ This is a **Manual Tests MCP Server** that provides 8 comprehensive tools for YA
 6. **manual_test_results_list** - Test results listing and analysis
 7. **manual_test_results_report** - Comprehensive report generation
 8. **manual_test_results_clean** - Advanced cleanup with multiple criteria
+9. **manual_test_help** - Comprehensive help information for all tools
+10. **manual_test_workflow** - Workflow guidance and recommended usage patterns
+11. **manual_test_schema** - YAML/JSON schema specifications and variable substitution
 
 ## Development Commands
 
@@ -35,7 +38,7 @@ This is a **Manual Tests MCP Server** that provides 8 comprehensive tools for YA
 # Build TypeScript to CommonJS
 npm run build
 
-# Run all tests (206 tests)
+# Run all tests (252 tests)
 npm test
 
 # Run tests with coverage
@@ -74,7 +77,7 @@ npx vitest --watch tests/tools/manual-test-parse.test.ts
 ### Layered Architecture
 ```
 src/
-├── mcp-server.ts              # MCP Server integration (all 8 tools)
+├── mcp-server.ts              # MCP Server integration (all 11 tools)
 ├── models/                    # Type definitions (centralized exports)
 │   ├── index.ts              # Central export hub
 │   ├── test-case.ts          # Core test case types
@@ -106,7 +109,7 @@ The codebase extensively uses Strategy pattern for extensibility:
 
 ## Testing Strategy
 
-### Test Structure (206 total tests)
+### Test Structure (252 total tests)
 ```
 tests/
 ├── tools/
@@ -117,12 +120,15 @@ tests/
 │   ├── manual-test-init.test.ts         # Initialization tool tests
 │   ├── manual-test-results-list.test.ts # Results listing tests
 │   ├── manual-test-results-report.test.ts # Report generation tests
-│   └── manual-test-results-clean.test.ts  # Cleanup tool tests
+│   ├── manual-test-results-clean.test.ts  # Cleanup tool tests
+│   ├── manual-test-help.test.ts         # Help tool tests
+│   ├── manual-test-workflow.test.ts     # Workflow tool tests
+│   └── manual-test-schema.test.ts       # Schema tool tests
 └── utils/                               # Test utilities
 ```
 
 ### TDD Implementation
-- **Red→Green→Refactor** cycles applied to all 8 tools
+- **Red→Green→Refactor** cycles applied to all 11 tools
 - **85%+ coverage** maintained across codebase
 - **Comprehensive edge case testing** including error conditions
 - **Integration testing** for MCP server functionality

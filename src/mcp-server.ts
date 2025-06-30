@@ -17,6 +17,9 @@ import { initProject } from './tools/manual-test-init';
 import { listTestResults } from './tools/manual-test-results-list';
 import { generateTestReport } from './tools/manual-test-results-report';
 import { cleanTestResults } from './tools/manual-test-results-clean';
+import { getHelp } from './tools/manual-test-help';
+import { getWorkflow } from './tools/manual-test-workflow';
+import { getSchema } from './tools/manual-test-schema';
 import { wrapWithMcpError, createValidationError } from './utils/error-handler';
 
 /**
@@ -321,6 +324,33 @@ class ManualTestsServer {
               required: ['resultsDir', 'criteria'],
             },
           },
+          {
+            name: 'manual_test_help',
+            description: 'Get comprehensive help information for all manual test tools',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+              additionalProperties: false,
+            },
+          },
+          {
+            name: 'manual_test_workflow',
+            description: 'Get workflow information and recommended usage patterns',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+              additionalProperties: false,
+            },
+          },
+          {
+            name: 'manual_test_schema',
+            description: 'Get detailed schema information for YAML/JSON structures and variable substitution',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+              additionalProperties: false,
+            },
+          },
         ],
       };
     });
@@ -354,6 +384,15 @@ class ManualTestsServer {
 
           case 'manual_test_results_clean':
             return this.handleResultsCleanup(args);
+
+          case 'manual_test_help':
+            return this.handleHelp(args);
+
+          case 'manual_test_workflow':
+            return this.handleWorkflow(args);
+
+          case 'manual_test_schema':
+            return this.handleSchema(args);
 
           default:
             throw new McpError(
@@ -572,6 +611,45 @@ class ManualTestsServer {
       dryRun,
       force,
     });
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleHelp(args: any) {
+    const result = getHelp();
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleWorkflow(args: any) {
+    const result = getWorkflow();
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleSchema(args: any) {
+    const result = getSchema();
     
     return {
       content: [

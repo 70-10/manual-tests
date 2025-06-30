@@ -9,3 +9,6 @@ export * from './results-result';
 export * from './report-result';
 export * from './clean-result';
 export * from './common';
+export * from './help-result';
+export * from './workflow-result';
+export * from './schema-result';
