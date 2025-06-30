@@ -7,6 +7,7 @@ export interface TestCaseFile {
   notes?: TestCase['notes'];
   fileName: string;
   filePath: string;
+  lastModified?: Date;
 }
 
 export interface ListFilter {

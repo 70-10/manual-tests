@@ -1,36 +1,11 @@
-import * as fs from 'fs-extra';
 import * as path from 'path';
 import { validateTestCase } from './manual-test-validate';
 import { TestCase, TestCaseFile, ListFilter, SortField, ListResult, Priority } from '../models';
+import { directoryExists, getYamlFiles, parseTestCaseFile } from '../utils/file-system-utils';
 
 // Re-export types for backward compatibility
 export type { TestCaseFile, ListFilter, SortField, ListResult } from '../models';
 
-/**
- * Check if directory exists
- */
-async function directoryExists(dirPath: string): Promise<boolean> {
-  try {
-    const stat = await fs.stat(dirPath);
-    return stat.isDirectory();
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Get all YAML files from directory
- */
-async function getYamlFiles(dirPath: string): Promise<string[]> {
-  try {
-    const files = await fs.readdir(dirPath);
-    return files.filter(file => 
-      file.endsWith('.yml') || file.endsWith('.yaml')
-    ).map(file => path.join(dirPath, file));
-  } catch (error) {
-    throw new Error(`Failed to read directory: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
 
 /**
  * Result type for file parsing
@@ -40,42 +15,37 @@ type ParseFileResult =
   | { success: false; error: string };
 
 /**
- * Parse test case file with detailed error information
+ * Parse test case file with file metadata
  */
-async function parseTestCaseFile(filePath: string): Promise<ParseFileResult> {
+async function parseTestCaseFileWithMetadata(filePath: string): Promise<ParseFileResult> {
+  const result = await parseTestCaseFile(filePath);
+  
+  if (!result.success) {
+    return {
+      success: false,
+      error: `Invalid test case format: ${result.error}`
+    };
+  }
+  
   try {
-    const content = await fs.readFile(filePath, 'utf-8');
-    const validation = validateTestCase(content);
-    
-    if (!validation.isValid) {
-      return {
-        success: false,
-        error: `Invalid test case format: ${validation.errors.join(', ')}`
-      };
-    }
-    
-    if (!validation.parsedData) {
-      return {
-        success: false,
-        error: 'No parsed data available'
-      };
-    }
-    
+    const fs = await import('fs-extra');
+    const stat = await fs.stat(filePath);
     const testCase: TestCaseFile = {
-      ...validation.parsedData,
+      ...result.testCase,
       fileName: path.basename(filePath),
-      filePath
+      filePath,
+      lastModified: stat.mtime
     };
     
     return {
       success: true,
       testCase,
-      warnings: []
+      warnings: result.warnings
     };
   } catch (error) {
     return {
       success: false,
-      error: `File read error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      error: `File metadata error: ${error instanceof Error ? error.message : 'Unknown error'}`
     };
   }
 }
@@ -211,9 +181,13 @@ export async function listTestCases(
     }
     
     // Get YAML files
-    const yamlFiles = await getYamlFiles(dirPath);
+    const yamlFilesResult = await getYamlFiles(dirPath);
     
-    if (yamlFiles.length === 0) {
+    if (!yamlFilesResult.success) {
+      throw new Error(yamlFilesResult.error);
+    }
+    
+    if (yamlFilesResult.files.length === 0) {
       return {
         success: true,
         testCases: [],
@@ -226,8 +200,8 @@ export async function listTestCases(
     const testCases: TestCaseFile[] = [];
     const warnings: string[] = [];
     
-    for (const filePath of yamlFiles) {
-      const result = await parseTestCaseFile(filePath);
+    for (const filePath of yamlFilesResult.files) {
+      const result = await parseTestCaseFileWithMetadata(filePath);
       if (result.success) {
         testCases.push(result.testCase);
         warnings.push(...result.warnings);

@@ -17,6 +17,7 @@ import { initProject } from './tools/manual-test-init';
 import { listTestResults } from './tools/manual-test-results-list';
 import { generateTestReport } from './tools/manual-test-results-report';
 import { cleanTestResults } from './tools/manual-test-results-clean';
+import { wrapWithMcpError, createValidationError } from './utils/error-handler';
 
 /**
  * MCP Server for Manual Test Framework Operations
@@ -328,31 +329,31 @@ class ManualTestsServer {
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
 
-      try {
+      return wrapWithMcpError(() => {
         switch (name) {
           case 'manual_test_validate':
-            return await this.handleValidate(args);
+            return this.handleValidate(args);
 
           case 'manual_test_parse':
-            return await this.handleParse(args);
+            return this.handleParse(args);
 
           case 'manual_test_list':
-            return await this.handleList(args);
+            return this.handleList(args);
 
           case 'manual_test_create':
-            return await this.handleCreate(args);
+            return this.handleCreate(args);
 
           case 'manual_test_init':
-            return await this.handleInit(args);
+            return this.handleInit(args);
 
           case 'manual_test_results_list':
-            return await this.handleResultsList(args);
+            return this.handleResultsList(args);
 
           case 'manual_test_results_report':
-            return await this.handleReportGeneration(args);
+            return this.handleReportGeneration(args);
 
           case 'manual_test_results_clean':
-            return await this.handleResultsCleanup(args);
+            return this.handleResultsCleanup(args);
 
           default:
             throw new McpError(
@@ -360,16 +361,7 @@ class ManualTestsServer {
               `Unknown tool: ${name}`
             );
         }
-      } catch (error) {
-        if (error instanceof McpError) {
-          throw error;
-        }
-        
-        throw new McpError(
-          ErrorCode.InternalError,
-          `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      }
+      }, 'Tool execution failed');
     });
   }
 
@@ -377,7 +369,7 @@ class ManualTestsServer {
     const { yamlContent } = args;
     
     if (typeof yamlContent !== 'string') {
-      throw new McpError(ErrorCode.InvalidParams, 'yamlContent must be a string');
+      throw createValidationError('yamlContent must be a string');
     }
 
     const result = validateTestCase(yamlContent);
@@ -396,7 +388,7 @@ class ManualTestsServer {
     const { yamlContent, projectMeta } = args;
     
     if (typeof yamlContent !== 'string') {
-      throw new McpError(ErrorCode.InvalidParams, 'yamlContent must be a string');
+      throw createValidationError('yamlContent must be a string');
     }
 
     const result = parseTestCase(yamlContent, projectMeta);
@@ -415,7 +407,7 @@ class ManualTestsServer {
     const { dirPath, filter = {}, sortBy = 'id' } = args;
     
     if (typeof dirPath !== 'string') {
-      throw new McpError(ErrorCode.InvalidParams, 'dirPath must be a string');
+      throw createValidationError('dirPath must be a string');
     }
 
     const result = await listTestCases(dirPath, filter, sortBy);
@@ -435,10 +427,10 @@ class ManualTestsServer {
     
     // Validate required parameters
     if (!template) {
-      throw new McpError(ErrorCode.InvalidParams, 'template is required');
+      throw createValidationError('template is required');
     }
     if (!meta) {
-      throw new McpError(ErrorCode.InvalidParams, 'meta is required');
+      throw createValidationError('meta is required');
     }
 
     const result = createTestCase({
@@ -470,10 +462,10 @@ class ManualTestsServer {
     
     // Validate required parameters
     if (!projectName) {
-      throw new McpError(ErrorCode.InvalidParams, 'projectName is required');
+      throw createValidationError('projectName is required');
     }
     if (!baseUrl) {
-      throw new McpError(ErrorCode.InvalidParams, 'baseUrl is required');
+      throw createValidationError('baseUrl is required');
     }
 
     const result = await initProject({
@@ -500,7 +492,7 @@ class ManualTestsServer {
     const { dirPath, filter = {}, sortBy = 'date' } = args;
     
     if (typeof dirPath !== 'string') {
-      throw new McpError(ErrorCode.InvalidParams, 'dirPath must be a string');
+      throw createValidationError('dirPath must be a string');
     }
 
     const result = await listTestResults({
@@ -532,10 +524,10 @@ class ManualTestsServer {
     
     // Validate required parameters
     if (!resultsDir || typeof resultsDir !== 'string') {
-      throw new McpError(ErrorCode.InvalidParams, 'resultsDir is required and must be a string');
+      throw createValidationError('resultsDir is required and must be a string');
     }
     if (!outputPath || typeof outputPath !== 'string') {
-      throw new McpError(ErrorCode.InvalidParams, 'outputPath is required and must be a string');
+      throw createValidationError('outputPath is required and must be a string');
     }
 
     const result = await generateTestReport({
@@ -568,10 +560,10 @@ class ManualTestsServer {
     
     // Validate required parameters
     if (!resultsDir || typeof resultsDir !== 'string') {
-      throw new McpError(ErrorCode.InvalidParams, 'resultsDir is required and must be a string');
+      throw createValidationError('resultsDir is required and must be a string');
     }
     if (!criteria || typeof criteria !== 'object') {
-      throw new McpError(ErrorCode.InvalidParams, 'criteria is required and must be an object');
+      throw createValidationError('criteria is required and must be an object');
     }
 
     const result = await cleanTestResults({
