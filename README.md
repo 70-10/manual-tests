@@ -1,250 +1,311 @@
-# Manual Tests
+# Manual Tests MCP Server
 
-YAMLで定義されたテストケースをPlaywright MCPサーバーで実行するマニュアルテストフレームワークです。
+YAML-based manual test case management MCP server with 8 comprehensive tools for test automation workflows.
 
-## 特徴
+## Overview
 
-- **人間が読みやすいYAML形式**でテストケースを記述
-- **Claude Code + Playwright MCP**による自動実行
-- **given/when/then構造**でテストシナリオを整理
-- **プロジェクトメタ情報**による一貫性のあるテストケース作成
-- **Markdown形式**の詳細な実行レポート生成
+A **Model Context Protocol (MCP) Server** that provides 8 powerful tools for manual testing workflows. Built with TypeScript following TDD principles, it serves as a comprehensive solution for YAML-based test case management, execution tracking, and report generation.
 
-## クイックスタート
+## Features
 
-### 0. 初期設定（必須）
+- **8 Comprehensive Tools** for complete test lifecycle management
+- **YAML-based Test Cases** with structured validation and parsing
+- **Advanced Filtering & Search** capabilities across test cases and results
+- **Template-based Test Creation** with multiple built-in templates
+- **Project Initialization** with configurable settings
+- **Results Management** with cleanup and reporting tools
+- **Type-safe Architecture** with Zod validation schemas
+- **Comprehensive Test Coverage** (206+ tests, 85%+ coverage)
 
-まず`project-meta.yml`を編集して、あなたのプロジェクトに合わせて設定：
-
-```yaml
-project:
-  name: "Your Service Name"          # あなたのサービス名
-  description: "Service description"
-
-environments:
-  production: "https://your-service.com"  # 実際のURL
-
-features:
-  - name: "ログイン"
-    id: "LOGIN"
-    base_url: "/login"
-```
-
-### 1. テストケース作成
-
-Claude Codeで新しいテストケースを作成：
-
-```
-ログイン機能のテストケースを作成してください
-```
-
-### 2. テスト実行
-
-作成されたテストケースを実行：
-
-```
-TC-LOGIN-001のマニュアルテストを実行してください
-```
-
-### 3. 結果確認
-
-実行結果は`tests/manual-tests/test-results/<test_name>/`に保存されます：
-- `report.md` - 詳細レポート
-- `screenshot.png` - スクリーンショット画像
-
-## テストケース作成方法
-
-### 1. Claude Codeで作成（推奨）
-
-Claude Codeに機能名を指定してテストケース作成を依頼：
-
-```
-<機能名>のテストケースを作成してください
-```
-
-**例：**
-- `ログイン機能のテストケースを作成してください`
-- `商品検索のテストケースを作成してください`  
-- `ユーザー登録フォームのテストケースを作成してください`
-
-Claude Codeが`project-meta.yml`の情報を参照し、以下を自動的に処理します：
-- プロジェクト設定の確認（対象環境、機能一覧）
-- テストデータの活用（ユーザー情報、共通データ）
-- 一貫したテストケースIDの生成
-- 標準的なYAMLファイルの作成
-
-### 2. 手動作成（テンプレート使用）
+## Installation
 
 ```bash
-cp tests/manual-tests/templates/test-case-template.yml tests/manual-tests/test-cases/your-test-case.yml
+npm install
+npm run build
 ```
 
-### 3. YAMLテストケースの構造
+## MCP Server Usage
 
-```yaml
-meta:
-  id: TC-FEATURE-001          # 一意のテストID
-  title: テスト内容の説明        # 日本語でのテスト概要
-  feature: 機能名             # テスト対象機能
-  priority: high|medium|low    # 優先度
-  tags: [smoke, regression]    # タグ
-  author: あなたの名前          # 作成者
-  lastUpdated: YYYY-MM-DD     # 最終更新日
+### Running the Server
 
-precondition:
-  - テスト実行の前提条件1
-  - テスト実行の前提条件2
+```bash
+# Start the MCP server
+npx github:70-10/manual-tests-mcp
 
-scenario:
-  given:
-    - 初期状態の説明
-    
-  when:
-    - ブラウザで "https://example.com" にアクセスする
-    - "ログイン" ボタンをクリックする
-    - "ユーザー名" フィールドに "test_user" を入力する
-    
-  then:
-    - ページタイトルが "ダッシュボード" であること
-    - "ようこそ" のテキストが画面上に表示されていること
-    - エラーメッセージが表示されていないこと
-
-notes: |
-  追加の注意事項やメモ
+# Or run directly
+node dist/mcp-server.js
 ```
 
-### 3. 命名規則
+### Available Tools
 
-- **テストID**: `TC-<FEATURE>-<連番>` (例: `TC-LOGIN-001`)
-- **ファイル名**: `<feature>-<連番>.yml` (例: `login-001.yml`)
+The MCP server exposes 8 tools via JSON-RPC 2.0 protocol:
 
-※ Claude Codeで作成する場合、適切な命名が自動的に適用されます
+#### 1. manual_test_validate
+Validates YAML test case structure and syntax.
 
-### 4. 操作パターン
-
-#### ナビゲーション
-```yaml
-when:
-  - ブラウザで "URL" にアクセスする
+```json
+{
+  "name": "manual_test_validate",
+  "arguments": {
+    "yamlContent": "meta:\n  id: TC-001\n  title: Test case..."
+  }
+}
 ```
 
-#### 要素操作
-```yaml
-when:
-  - "ボタン名" ボタンをクリックする
-  - "フィールド名" フィールドに "値" を入力する
-  - "オプション" を選択する
+#### 2. manual_test_parse
+Parses test cases with variable substitution and content processing.
+
+```json
+{
+  "name": "manual_test_parse", 
+  "arguments": {
+    "yamlContent": "meta:\n  id: TC-001\n...",
+    "projectMeta": {
+      "environments": {"prod": "https://example.com"},
+      "test_data": {"user": "testuser"}
+    }
+  }
+}
 ```
 
-#### 検証項目
-```yaml
-then:
-  - ページタイトルが "期待値" であること
-  - "テキスト" が画面上に表示されていること
-  - "要素" が存在すること
-  - エラーメッセージが表示されていないこと
+#### 3. manual_test_list
+Lists test cases with advanced filtering and sorting options.
+
+```json
+{
+  "name": "manual_test_list",
+  "arguments": {
+    "dirPath": "./test-cases",
+    "filter": {
+      "priority": "high",
+      "feature": "login",
+      "tags": ["smoke"]
+    },
+    "sortBy": "priority"
+  }
+}
 ```
 
-## テスト実行方法
+#### 4. manual_test_create
+Creates new test cases using built-in templates.
 
-### Claude Codeでの実行
-
-1. **テストケース作成**
-   ```
-   <機能名>のテストケースを作成してください
-   ```
-
-2. **個別テスト実行**
-   ```
-   <TEST-ID>のマニュアルテストを実行してください
-   ```
-
-3. **実行される手順**
-   - YAMLファイル読み込み・解析
-   - Playwright MCPでブラウザ操作実行
-   - 検証項目チェック
-   - スクリーンショット取得
-   - 結果レポート生成
-
-### 実行結果の確認
-
-実行完了後、以下の場所で結果を確認：
-
-- **テスト結果フォルダ**: `tests/manual-tests/test-results/YYYYMMDD_<TEST-ID>/`
-- **詳細レポート**: `report.md`
-- **スクリーンショット**: `screenshot.png`
-
-## プロジェクト構造
-
-```
-manual-tests/
-├── README.md                    # このファイル
-├── CLAUDE.md                    # Claude Code向けの指示
-├── project-meta.yml             # プロジェクトメタ情報
-├── .mcp.json                   # Playwright MCP設定
-└── tests/
-    └── manual-tests/
-        ├── README.md           # 技術仕様詳細
-        ├── templates/          # 各種テンプレート
-        │   ├── test-case-template.yml
-        │   └── test-result-template.md
-        ├── test-cases/         # YAMLテストケース
-        │   └── top-page-001.yml
-        └── test-results/       # 実行結果レポート
-            └── 20250630_TC-TOP-PAGE-001/
-                ├── report.md
-                └── screenshot.png
+```json
+{
+  "name": "manual_test_create",
+  "arguments": {
+    "template": "login",
+    "meta": {
+      "title": "User Login Test",
+      "feature": "authentication", 
+      "priority": "high",
+      "author": "Test Author"
+    },
+    "scenario": {
+      "given": ["User is on login page"],
+      "when": ["User enters credentials"],
+      "then": ["User is logged in successfully"]
+    }
+  }
+}
 ```
 
-## プロジェクトメタ情報の設定
+#### 5. manual_test_init
+Initializes a new manual test project structure.
 
-### project-meta.ymlの構成
-
-```yaml
-project:
-  name: "Your Service Name"          # プロジェクト名
-  description: "Service description"  # 説明
-  
-environments:
-  production: "https://your-service.com"     # 本番環境
-  staging: "https://staging.your-service.com"  # ステージング環境
-  
-test_data:
-  users:
-    valid_user:
-      username: "test_user"
-      password: "test_password"
-      
-features:
-  - name: "ログイン"
-    id: "LOGIN"
-    base_url: "/login"
-    description: "ユーザー認証機能"
+```json
+{
+  "name": "manual_test_init",
+  "arguments": {
+    "projectName": "My Test Project",
+    "baseUrl": "https://example.com",
+    "features": [
+      {"name": "Login", "description": "User authentication"}
+    ],
+    "environments": {
+      "production": "https://prod.example.com",
+      "staging": "https://staging.example.com"
+    }
+  }
+}
 ```
 
-### 初期設定手順
+#### 6. manual_test_results_list
+Lists test result directories with filtering and sorting.
 
-1. **project-meta.yml編集**: あなたのサービスに合わせて設定
-2. **環境URL設定**: 実際のサービスURLに変更
-3. **テストデータ準備**: 安全なテスト用ユーザー情報を設定
-4. **機能定義**: テスト対象機能を追加
+```json
+{
+  "name": "manual_test_results_list",
+  "arguments": {
+    "dirPath": "./test-results",
+    "filter": {
+      "status": "failed",
+      "dateFrom": "2024-01-01",
+      "dateTo": "2024-12-31"
+    },
+    "sortBy": "date"
+  }
+}
+```
 
-## ベストプラクティス
+#### 7. manual_test_results_report
+Generates comprehensive test execution reports.
 
-### テストケース作成時
-- **project-meta.yml**の情報を活用して一貫性を保つ
-- **具体的で測定可能**な検証項目を記述
-- **動的な値**は`{{today}}`のようにパラメータ化
-- **タグ**でテストの種類を分類（smoke, regression, e2e等）
+```json
+{
+  "name": "manual_test_results_report",
+  "arguments": {
+    "resultsDir": "./test-results", 
+    "outputPath": "./report.md",
+    "format": "markdown",
+    "title": "Test Execution Report",
+    "includeSummary": true,
+    "includeScreenshots": true
+  }
+}
+```
 
-### テスト実行時
-- 実行前に**前提条件**を確認
-- **スクリーンショット**で結果を視覚的に確認
-- **失敗時**は詳細ログを確認して原因を特定
+#### 8. manual_test_results_clean
+Cleans up test result directories based on criteria.
 
-## 技術詳細
+```json
+{
+  "name": "manual_test_results_clean",
+  "arguments": {
+    "resultsDir": "./test-results",
+    "criteria": {
+      "olderThanDays": 30,
+      "largerThanMB": 100,
+      "includeStatuses": ["passed"]
+    },
+    "dryRun": true
+  }
+}
+```
 
-詳細な技術仕様については以下を参照：
-- [技術仕様](tests/manual-tests/README.md)
-- [テストケーステンプレート](tests/manual-tests/templates/test-case-template.yml)
-- [結果レポートテンプレート](tests/manual-tests/templates/test-result-template.md)
+## Development
+
+### Building
+
+```bash
+npm run build
+```
+
+### Testing
+
+```bash
+# Run all tests (206+ tests)
+npm test
+
+# Run with coverage
+npm test:coverage
+
+# Run specific test file
+npx vitest tests/tools/manual-test-validate.test.ts
+
+# Watch mode
+npx vitest --watch
+```
+
+### Development Mode
+
+```bash
+npm run dev
+```
+
+## Architecture
+
+### Core Components
+
+- **MCP Server** (`src/mcp-server.ts`) - JSON-RPC 2.0 server exposing all tools
+- **Models Layer** (`src/models/`) - Type definitions and interfaces
+- **Tools Layer** (`src/tools/`) - Implementation of all 8 tools
+- **Schema Layer** (`src/schemas/`) - Zod validation schemas
+
+### Strategy Pattern Implementation
+
+The codebase uses Strategy pattern for extensibility:
+
+- **Variable Resolution** - Pluggable variable resolvers
+- **Filtering** - Composable filter strategies  
+- **Template Management** - Template-specific generators
+- **File System Operations** - Abstracted FS operations
+- **Cleanup Criteria** - Multiple cleanup strategies
+
+### Type Safety
+
+- **Central Type Hub** - All types exported through `src/models/index.ts`
+- **Zod Validation** - Runtime type checking with compile-time inference
+- **Result Types** - Consistent success/error result patterns
+- **Generic Patterns** - Reusable generic types for common operations
+
+## Project Structure
+
+```
+src/
+├── mcp-server.ts              # MCP Server integration
+├── models/                    # Type definitions
+│   ├── index.ts              # Central export hub
+│   ├── test-case.ts          # Core test case types
+│   ├── *-result.ts           # Result types for each tool
+│   └── common.ts             # Shared types
+├── tools/                     # Tool implementations
+│   ├── manual-test-*.ts      # Main tool functions
+│   ├── generators/           # Generation utilities
+│   ├── managers/             # Management utilities  
+│   ├── templates/            # Template definitions
+│   └── validators/           # Input validation
+└── schemas/                   # Zod validation schemas
+
+tests/
+├── tools/                     # Tool-specific tests
+│   ├── manual-test-validate.test.ts
+│   ├── manual-test-parse.test.ts
+│   ├── manual-test-list.test.ts
+│   ├── manual-test-create.test.ts
+│   ├── manual-test-init.test.ts
+│   ├── manual-test-results-list.test.ts
+│   ├── manual-test-results-report.test.ts
+│   └── manual-test-results-clean.test.ts
+└── utils/                     # Test utilities
+```
+
+## Configuration
+
+### MCP Configuration
+
+Add to your MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "manual-tests": {
+      "command": "npx",
+      "args": ["github:70-10/manual-tests-mcp"]
+    }
+  }
+}
+```
+
+### Claude Code Integration
+
+When using with Claude Code, the server automatically integrates with the MCP protocol to provide seamless test management capabilities.
+
+## Key Dependencies
+
+- **@modelcontextprotocol/sdk** - MCP server implementation
+- **zod** - Runtime schema validation
+- **fs-extra** - Enhanced file system operations
+- **js-yaml** - YAML parsing and generation
+- **vitest** - Testing framework with v8 coverage
+
+## Contributing
+
+1. Follow TDD approach with Red→Green→Refactor cycles
+2. Maintain 85%+ test coverage
+3. Use TypeScript strict mode
+4. Follow existing Strategy pattern architecture
+5. Add comprehensive tests for new tools
+
+## License
+
+MIT
