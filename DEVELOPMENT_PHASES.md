@@ -48,83 +48,107 @@
   - `.mcp.json`設定例
   - 全ツールの使用例
 
+#### Phase 5: 追加ツール実装（TDD完了）
+- ✅ **manual_test_create** (Red→Green→Refactor)
+  - テンプレートベースのテストケース作成
+  - Strategy パターン（TemplateManager, IdGenerator, YamlGenerator）
+  - 4つのテンプレート（login, form, navigation, api）
+  - カスタムシナリオ対応
+  - 33/33テスト通過
+- ✅ **manual_test_init** (Red→Green→Refactor)
+  - プロジェクト初期化機能
+  - Strategy パターン（ProjectMetaGenerator, FileContentGenerator, FileSystemManager）
+  - ディレクトリ構造自動生成
+  - project-meta.yml/README.md/MCP設定生成
+  - 32/32テスト通過
+
+#### Phase 6: テスト結果管理（進行中）
+- ✅ **manual_test_results_list** (Green完了)
+  - テスト結果一覧表示
+  - レポート解析（Markdown形式）
+  - 高度フィルタリング（status, executor, environment, date, testId）
+  - 柔軟ソート（executionDate, testId, status, duration, size）
+  - ページネーション対応
+  - 18/18テスト通過
+- 🚧 **manual_test_results_list** (Refactor待ち)
+- 🔮 **manual_test_results_report** (未実装)
+- 🔮 **manual_test_results_clean** (未実装)
+
 ### 📊 技術的達成状況
 
-- **テスト**: 45/45 passing (100%)
+- **テスト**: 128/128 passing (100%)
 - **カバレッジ**: 84%+
 - **アーキテクチャ**: Strategy パターン、関心事の分離
 - **配布準備**: bin設定完了、MCP統合完了
+- **実装済みツール**: 6/8 完了
 
 ---
 
 ## 🔄 残りのフェーズ
 
-### Phase 5: 追加ツール実装（中優先度）
+### Phase 6: テスト結果管理（完了まで残り2機能）
 
-#### 🚧 manual_test_create 
-**目的**: テンプレートベースのテストケース作成機能
+#### 🚧 manual_test_results_list (Refactor待ち)
+**現状**: Green フェーズ完了、Strategy パターン適用待ち
+- レポート解析の Strategy 化
+- フィルタリング/ソート機能の Strategy 化  
+- ファイルシステム操作の抽象化
+
+#### 🔮 manual_test_results_report
+**目的**: 包括的なテスト結果レポート生成
 
 **実装計画**:
 ```
 Red: テスト失敗を確認
-- ✍️ tests/tools/manual-test-create.test.ts作成
-- テンプレート選択機能のテスト
-- 基本情報入力のテスト  
-- YAML生成のテスト
+- ✍️ tests/tools/manual-test-results-report.test.ts作成
+- HTML/Markdown/JSON/CSV形式のテスト
+- テンプレート機能のテスト
+- サマリ統計のテスト
 
 Green: 最小実装で通す
-- ✍️ src/tools/manual-test-create.ts実装
-- テンプレート管理機能
-- 基本情報からYAML生成
+- ✍️ src/tools/manual-test-results-report.ts実装
+- 基本レポート生成機能
+- 複数フォーマット対応
 
 Refactor: 品質向上
-- Strategy パターン適用
-- テンプレートの外部化
-- エラーハンドリング強化
+- Strategy パターン適用（フォーマット別生成）
+- テンプレートエンジン統合
+- 統計計算の抽象化
 ```
 
 **期待される機能**:
-- テンプレート選択（login, form, navigation等）
-- メタデータ入力（ID生成、タイトル、priority等）
-- シナリオ骨組み生成
+- 複数フォーマット対応（HTML, Markdown, JSON, CSV）
+- 実行統計（成功率、平均実行時間等）
+- カスタムテンプレート対応
+- スクリーンショット/ログ埋め込み
 
-#### 🚧 manual_test_init
-**目的**: プロジェクト初期化機能
+#### 🔮 manual_test_results_clean
+**目的**: 古いテスト結果の自動クリーンアップ
 
 **実装計画**:
 ```
 Red: テスト失敗を確認
-- ✍️ tests/tools/manual-test-init.test.ts作成
-- ディレクトリ構造作成のテスト
-- project-meta.yml生成のテスト
-- 設定ファイル作成のテスト
+- ✍️ tests/tools/manual-test-results-clean.test.ts作成
+- 日数ベース削除のテスト
+- 件数ベース保持のテスト
+- ドライラン機能のテスト
 
-Green: 最小実装で通す  
-- ✍️ src/tools/manual-test-init.ts実装
-- 必須ディレクトリ作成
-- テンプレートファイル配置
+Green: 最小実装で通す
+- ✍️ src/tools/manual-test-results-clean.ts実装
+- 基本クリーンアップ機能
+- 安全性確保（ドライラン）
 
 Refactor: 品質向上
-- テンプレート管理の統一
-- 設定オプション対応
-- 既存プロジェクト検出
+- Strategy パターン適用（削除条件）
+- バックアップ機能
+- 進捗表示
 ```
 
 **期待される機能**:
-- `tests/manual-tests/`ディレクトリ構造作成
-- `project-meta.yml`テンプレート生成
-- `.mcp.json`設定サンプル作成
-
-### Phase 6: テスト結果管理（低優先度）
-
-#### 🔮 manual_test_results_list
-**目的**: 実行結果一覧表示
-
-#### 🔮 manual_test_results_report  
-**目的**: 結果レポート生成
-
-#### 🔮 manual_test_results_clean
-**目的**: 古い結果のクリーンアップ
+- 日数ベース削除（N日前より古い結果）
+- 件数ベース保持（最新N件のみ保持）
+- ステータス別クリーンアップ
+- ドライラン機能（削除予定の表示のみ）
 
 ### Phase 7: 配布とドキュメント（中優先度）
 
@@ -145,13 +169,14 @@ Refactor: 品質向上
 ## 🎯 次のアクション
 
 ### 即座に実行可能
-1. **manual_test_create**のTDD実装開始
-2. **manual_test_init**のTDD実装
+1. **manual_test_results_list**のRefactor実装
+2. **manual_test_results_report**のTDD実装開始
+3. **manual_test_results_clean**のTDD実装開始
 
-### 中期目標（1-2週間）
-1. 全ツール完成
-2. 配布準備完了
-3. ドキュメント完成
+### 中期目標（残り2機能）
+1. テスト結果管理機能完成
+2. 全8ツール完成
+3. 配布準備完了
 
 ### 技術的考慮事項
 
@@ -174,10 +199,12 @@ Refactor: 品質向上
 
 ## 📈 成功指標
 
-- [ ] 全ツール実装完了（5/3 完了）
-- [ ] テストカバレッジ 85%+ 維持
-- [ ] MCP統合 100%動作
+- [x] コアツール実装完了（3/3 完了）
+- [x] 追加ツール実装完了（2/2 完了） 
+- [ ] 結果管理ツール実装完了（1/3 完了）
+- [x] テストカバレッジ 85%+ 維持
+- [x] MCP統合 100%動作
 - [ ] npm配布可能状態
 - [ ] ドキュメント完全性
 
-現在の**Manual Tests MCP Server**は、コアな検証・解析・一覧機能が完全に動作する状態で、実用に耐える品質を達成しています。残りのフェーズは利便性向上と配布準備が中心となります。
+現在の**Manual Tests MCP Server**は、コアな検証・解析・作成・初期化機能がすべて完全に動作し、テスト結果管理の基盤も整っています。残り2つの結果管理機能（レポート生成・クリーンアップ）を実装すれば、完全なテストフレームワークが完成します。
