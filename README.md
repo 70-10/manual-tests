@@ -6,6 +6,19 @@ YAML-based manual test case management MCP server with 11 comprehensive tools fo
 
 **Manual Tests MCP Server** is a Model Context Protocol (MCP) server that streamlines manual testing workflows. It manages test cases in YAML format, supporting the entire test lifecycle from test execution tracking to report generation.
 
+### 🎯 Quick Start for AI Agents
+
+**New to this MCP server? Start with the workflow discovery tools:**
+
+```bash
+# Essential first steps - run these in order:
+manual_test_workflow()    # Learn workflow patterns
+manual_test_help()        # Get tool usage examples  
+manual_test_schema()      # Understand data structures
+```
+
+These tools will guide you through all available workflows and usage patterns.
+
 ### Key Features
 
 - **11 Comprehensive Tools** - Validation, parsing, listing, creation, initialization, results management, report generation, cleanup, help, workflows, and schemas
@@ -29,6 +42,30 @@ YAML-based manual test case management MCP server with 11 comprehensive tools fo
 10. **manual_test_workflow** - Workflow information and recommended usage patterns
 11. **manual_test_schema** - YAML/JSON structure and schema specifications
 
+## Getting Started
+
+### 🚀 First Steps - Essential for New Users
+
+**Before using any other tools, start with these workflow discovery tools:**
+
+```typescript
+// 1. Get comprehensive help for all 11 tools
+manual_test_help()
+
+// 2. Learn recommended workflows and usage patterns  
+manual_test_workflow()
+
+// 3. Understand YAML/JSON schemas and variable substitution
+manual_test_schema()
+```
+
+**Why start here?**
+- **`manual_test_help`** provides detailed usage examples for all 11 tools
+- **`manual_test_workflow`** shows you proven workflow patterns and integration strategies
+- **`manual_test_schema`** gives you the complete structure specifications
+
+These three tools contain all the guidance you need to effectively use this MCP server. **Always consult the workflow tool first** - it will save you time and ensure you follow best practices.
+
 ## Usage
 
 ### MCP Configuration
@@ -46,13 +83,23 @@ To use with Claude Code or other MCP-compatible clients, add the following to yo
 }
 ```
 
-### Basic Workflow
+### First Steps - Start Here!
+
+**🎯 Before doing anything else, run these discovery tools:**
+
+1. **`manual_test_workflow`** - Learn the recommended workflow patterns
+2. **`manual_test_help`** - Get detailed usage examples for all tools  
+3. **`manual_test_schema`** - Understand the YAML/JSON structure requirements
+
+### Basic Workflow (After Learning from Workflow Tool)
 
 1. **Project Initialization** - Create project structure and metadata with `manual_test_init`
 2. **Test Case Creation** - Generate template-based test cases with `manual_test_create`
 3. **Validation** - Check YAML structure with `manual_test_validate`
 4. **Execution Management** - Search test cases based on conditions with `manual_test_list`
 5. **Report Generation** - Create comprehensive test result reports with `manual_test_results_report`
+
+> 💡 **Pro Tip**: The workflow tool (`manual_test_workflow`) provides 4 different workflow patterns with specific tool sequences. Always check it first!
 
 ### Variable Substitution
 
