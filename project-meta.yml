@@ -1,0 +1,109 @@
+# プロジェクトメタ情報
+# テストケース作成時に参照される基本設定ファイル
+
+project:
+  name: "Manual Tests Framework"
+  description: "YAMLベースのマニュアルテストフレームワーク"
+  version: "1.0.0"
+  last_updated: "2025-06-29"
+
+# テスト対象環境
+environments:
+  production: "https://example.com"
+  staging: "https://staging.example.com"
+  development: "https://dev.example.com"
+  local: "http://localhost:3000"
+
+# デフォルト設定
+defaults:
+  environment: "production"  # デフォルト環境
+  timeout: 30000            # タイムアウト（ミリ秒）
+  retry: 3                  # リトライ回数
+  screenshot: true          # スクリーンショット取得
+
+# 共通テストデータ
+test_data:
+  users:
+    valid_user:
+      username: "test_user"
+      password: "test_password123"
+      email: "test@example.com"
+    admin_user:
+      username: "admin"
+      password: "admin_password123"
+      email: "admin@example.com"
+    invalid_user:
+      username: "invalid_user"
+      password: "wrong_password"
+      email: "invalid@example.com"
+
+  products:
+    sample_product:
+      name: "サンプル商品"
+      id: "PROD001"
+      price: "1000"
+    search_keyword: "テスト商品"
+
+# テスト対象機能定義
+features:
+  - name: "トップページ"
+    id: "TOP-PAGE"
+    base_url: "/"
+    description: "サイトのトップページ表示・基本機能"
+    
+  - name: "ログイン"
+    id: "LOGIN"
+    base_url: "/login"
+    description: "ユーザー認証・ログイン機能"
+    
+  - name: "ユーザー登録"
+    id: "SIGNUP"
+    base_url: "/signup"
+    description: "新規ユーザー登録機能"
+    
+  - name: "商品検索"
+    id: "SEARCH"
+    base_url: "/search"
+    description: "商品検索・絞り込み機能"
+    
+  - name: "商品詳細"
+    id: "PRODUCT"
+    base_url: "/product"
+    description: "商品詳細表示機能"
+    
+  - name: "ショッピングカート"
+    id: "CART"
+    base_url: "/cart"
+    description: "カート機能・商品追加削除"
+    
+  - name: "チェックアウト"
+    id: "CHECKOUT"
+    base_url: "/checkout"
+    description: "購入手続き・決済機能"
+
+# 共通設定
+common_selectors:
+  login_form:
+    username_field: "ユーザー名"
+    password_field: "パスワード"
+    login_button: "ログイン"
+    logout_button: "ログアウト"
+    
+  navigation:
+    home_link: "ホーム"
+    search_link: "検索"
+    cart_link: "カート"
+    profile_link: "プロフィール"
+
+# 動的値の定義
+variables:
+  today: "{{today}}"           # 今日の日付 (YYYY-MM-DD)
+  timestamp: "{{timestamp}}"   # タイムスタンプ
+  random_email: "{{random_email}}"  # ランダムメールアドレス
+
+# テストケース作成時の注意事項
+notes: |
+  - 新しい機能を追加する場合は、featuresセクションに追記してください
+  - 環境URLは実際のサービスURLに変更してください
+  - テストデータは本番環境で安全な値を使用してください
+  - 共通セレクタは実際のHTML構造に合わせて調整してください
