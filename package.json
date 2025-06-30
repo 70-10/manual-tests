@@ -4,7 +4,7 @@
   "description": "MCP server for manual test framework operations",
   "main": "dist/index.js",
   "bin": {
-    "manual-tests-mcp": "dist/index.js"
+    "manual-tests-mcp": "dist/mcp-server.js"
   },
   "files": [
     "dist"
