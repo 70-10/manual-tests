@@ -1,0 +1,53 @@
+{
+  "name": "manual-tests-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for manual test framework operations",
+  "keywords": [
+    "mcp",
+    "manual-test",
+    "testing",
+    "automation"
+  ],
+  "homepage": "https://github.com/70-10/manual-tests#readme",
+  "bugs": {
+    "url": "https://github.com/70-10/manual-tests/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/70-10/manual-tests.git"
+  },
+  "license": "MIT",
+  "author": "",
+  "main": "dist/index.js",
+  "bin": {
+    "manual-tests-mcp": "dist/mcp-server.js"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:ci": "vitest --run --coverage",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.13.2",
+    "fs-extra": "11.3.0",
+    "js-yaml": "4.1.0",
+    "zod": "3.25.67"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "11.0.4",
+    "@types/js-yaml": "4.0.9",
+    "@types/node": "24.0.7",
+    "@vitest/coverage-v8": "3.2.4",
+    "typescript": "5.8.3",
+    "vitest": "3.2.4"
+  }
+}

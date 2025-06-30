@@ -1,4 +1,98 @@
-# テストケーステンプレート
+// File content generation strategies
+
+import type { InitProjectInput } from '../../models';
+
+/**
+ * Interface for file content generation strategies
+ */
+export interface FileContentGenerator {
+  generateReadme(input: InitProjectInput): string;
+  generateTestCaseTemplate(): string;
+  generateMcpConfig(): object;
+}
+
+/**
+ * Default file content generator implementation
+ */
+export class DefaultFileContentGenerator implements FileContentGenerator {
+  generateReadme(input: InitProjectInput): string {
+    return `# Manual Tests
+
+${input.projectName}のマニュアルテストプロジェクトです。
+
+## 概要
+
+このプロジェクトでは、YAML形式でテストケースを定義し、MCP Serverを通じてテストケースの管理・実行を行います。
+
+## 使用方法
+
+### 1. MCP Server設定
+
+\`.mcp.json\`ファイルにMCP Serverの設定を追加してください：
+
+\`\`\`json
+{
+  "mcpServers": {
+    "manual-tests": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["github:70-10/manual-tests-mcp"]
+    }
+  }
+}
+\`\`\`
+
+### 2. テストケース作成
+
+\`test-cases/\`ディレクトリにYAMLファイルでテストケースを作成します。
+
+テンプレートファイルは \`templates/test-case-template.yml\` を参照してください。
+
+### 3. 利用可能なツール
+
+- **manual_test_validate**: テストケースの構文チェック
+- **manual_test_parse**: 変数置換処理
+- **manual_test_list**: テストケース一覧表示
+- **manual_test_create**: テンプレートベースのテストケース作成
+
+## ディレクトリ構造
+
+\`\`\`
+tests/manual-tests/
+├── README.md              # このファイル
+├── project-meta.yml       # プロジェクト設定
+├── test-cases/           # テストケースYAMLファイル
+├── test-results/         # テスト実行結果
+└── templates/           # テンプレートファイル
+    └── test-case-template.yml
+\`\`\`
+
+## 設定ファイル
+
+### project-meta.yml
+
+プロジェクト全体の設定を管理します：
+
+- **environments**: 環境URL設定
+- **features**: 機能定義
+- **test_data**: テストデータ
+- **common_selectors**: 共通セレクタ
+
+## 変数システム
+
+テストケース内で以下の変数が使用できます：
+
+- \`{{today}}\`: 今日の日付
+- \`{{timestamp}}\`: タイムスタンプ
+- \`{{environments.production}}\`: 環境URL
+- \`{{test_data.users.valid_user.username}}\`: テストデータ
+
+詳細は \`templates/test-case-template.yml\` を参照してください。
+`;
+  }
+
+  generateTestCaseTemplate(): string {
+    return `# テストケーステンプレート
 # 使用方法: 
 # 1. このファイルを test-cases/<feature>-<seq>.yml にコピー
 # 2. <> で囲まれた部分を実際の値に置換
@@ -28,7 +122,7 @@ scenario:
     # 他の初期状態があれば追加
     
   when:
-    - <実行操作1>                        # 例: ブラウザで "{{環境URL}}/login" にアクセスする
+    - <実行操作1>                        # 例: ブラウザで "{{environments.production}}/login" にアクセスする
     - <実行操作2>                        # 例: "ユーザー名" に "{{test_data.users.valid_user.username}}" を入力する
     - <実行操作3>                        # 例: "パスワード" に "{{test_data.users.valid_user.password}}" を入力する
     - <実行操作4>                        # 例: "ログイン" ボタンをクリックする
@@ -65,3 +159,21 @@ notes: |
 # - "{{common_selectors.login_form.login_button}}" をクリックする
 # - ページタイトルが "ホーム" であること
 # - "{{test_data.users.valid_user.username}}" のテキストが表示されること
+`;
+  }
+
+  generateMcpConfig(): object {
+    return {
+      mcpServers: {
+        'manual-tests': {
+          type: 'stdio',
+          command: 'npx',
+          args: ['github:70-10/manual-tests-mcp']
+        }
+      }
+    };
+  }
+}
+
+// Default generator instance
+export const defaultFileContentGenerator = new DefaultFileContentGenerator();

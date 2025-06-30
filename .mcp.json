@@ -7,6 +7,11 @@
           "@playwright/mcp@latest"
         ],
         "env": {}
+      },
+      "manual-tests": {
+        "type": "stdio", 
+        "command": "node",
+        "args": ["/Users/yoshida_nao/dev/src/github.com/70-10/manual-tests/dist/mcp-server.js"]
       }
     }
   }
