@@ -43,46 +43,124 @@ The MCP server exposes 8 tools via JSON-RPC 2.0 protocol:
 #### 1. manual_test_validate
 Validates YAML test case structure and syntax.
 
+**Parameters:**
+- `yamlContent` (string): YAML content of the test case to validate
+
+**Example:**
 ```json
 {
   "name": "manual_test_validate",
   "arguments": {
-    "yamlContent": "meta:\n  id: TC-001\n  title: Test case..."
+    "yamlContent": "meta:\n  id: TC-LOGIN-001\n  title: ログイン機能のテスト\n  priority: high\n  tags: [smoke, regression]\nscenario:\n  given:\n    - ユーザーがログアウト状態\n  when:\n    - ログインフォームにアクセス\n  then:\n    - フォームが表示される"
   }
+}
+```
+
+**Response:**
+```json
+{
+  "isValid": true,
+  "errors": [],
+  "warnings": [],
+  "parsedData": { ... }
 }
 ```
 
 #### 2. manual_test_parse
 Parses test cases with variable substitution and content processing.
 
+**Parameters:**
+- `yamlContent` (string): YAML content of the test case to parse
+- `projectMeta` (object, optional): Project metadata for variable substitution
+
+**Variable Types:**
+- `{{today}}` - Current date in YYYY-MM-DD format
+- `{{timestamp}}` - Current timestamp
+- `{{environments.production}}` - Environment URL from project metadata
+- `{{test_data.users.valid_user.username}}` - Test data from project metadata
+
+**Example:**
 ```json
 {
   "name": "manual_test_parse", 
   "arguments": {
-    "yamlContent": "meta:\n  id: TC-001\n...",
+    "yamlContent": "meta:\n  id: TC-LOGIN-001\n  title: ログイン機能のテスト\n  priority: high\nscenario:\n  given:\n    - 今日は {{today}} です\n  when:\n    - \"{{environments.production}}/login\" にアクセス\n    - ユーザー名 \"{{test_data.users.valid_user.username}}\" を入力\n  then:\n    - ログインが成功する",
     "projectMeta": {
-      "environments": {"prod": "https://example.com"},
-      "test_data": {"user": "testuser"}
+      "environments": {
+        "production": "https://example.com"
+      },
+      "test_data": {
+        "users": {
+          "valid_user": {
+            "username": "test_user"
+          }
+        }
+      }
     }
   }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "testCase": { ... },
+  "processedSteps": {
+    "given": ["今日は 2025-06-30 です"],
+    "when": ["https://example.com/login にアクセス", "ユーザー名 test_user を入力"],
+    "then": ["ログインが成功する"]
+  },
+  "warnings": []
 }
 ```
 
 #### 3. manual_test_list
 Lists test cases with advanced filtering and sorting options.
 
+**Parameters:**
+- `dirPath` (string): Path to the directory containing test case files
+- `filter` (object, optional): Filter options
+  - `feature` (string): Filter by feature name
+  - `priority` (string): Filter by priority (high, medium, low)
+  - `tags` (array): Filter by tags
+  - `author` (string): Filter by author
+- `sortBy` (string, optional): Sort field (id, lastUpdated, priority, feature)
+
+**Example:**
 ```json
 {
   "name": "manual_test_list",
   "arguments": {
-    "dirPath": "./test-cases",
+    "dirPath": "./tests/manual-tests/test-cases",
     "filter": {
       "priority": "high",
-      "feature": "login",
       "tags": ["smoke"]
     },
-    "sortBy": "priority"
+    "sortBy": "lastUpdated"
   }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "testCases": [
+    {
+      "meta": {
+        "id": "TC-LOGIN-001",
+        "title": "ログイン機能のテスト",
+        "priority": "high",
+        "tags": ["smoke", "regression"]
+      },
+      "scenario": { ... },
+      "fileName": "login-001.yml",
+      "filePath": "/full/path/to/login-001.yml"
+    }
+  ],
+  "totalCount": 1,
+  "warnings": []
 }
 ```
 
@@ -289,6 +367,83 @@ Add to your MCP settings:
 ### Claude Code Integration
 
 When using with Claude Code, the server automatically integrates with the MCP protocol to provide seamless test management capabilities.
+
+## Usage in Claude Code
+
+### Validate Test Case
+```
+manual_test_validateツールを使って以下のYAMLをチェックしてください:
+
+meta:
+  id: TC-TEST-001
+  title: テストケース
+  priority: high
+scenario:
+  given: [初期状態]
+  when: [操作]
+  then: [期待結果]
+```
+
+### Parse with Variables
+```
+manual_test_parseツールを使って変数を置換してください:
+
+YAML:
+meta:
+  id: TC-TEST-001
+  title: 今日のテスト
+  priority: high
+scenario:
+  given:
+    - 今日は {{today}} です
+  when:
+    - {{environments.production}} にアクセス
+  then:
+    - 結果を確認
+
+Project Meta:
+{
+  "environments": {
+    "production": "https://example.com"
+  }
+}
+```
+
+### List Test Cases
+```
+manual_test_listツールを使ってtest-casesディレクトリから高優先度のテストケースを一覧してください:
+
+{
+  "dirPath": "./tests/manual-tests/test-cases",
+  "filter": {
+    "priority": "high"
+  },
+  "sortBy": "lastUpdated"
+}
+```
+
+## Error Handling
+
+All tools return structured error information:
+
+```json
+{
+  "success": false,
+  "error": "Detailed error message"
+}
+```
+
+Validation errors include specific field information:
+```json
+{
+  "isValid": false,
+  "errors": [
+    "meta.id: ID format must be TC-[A-Z-]+-[NUMBER]",
+    "scenario.given: Required"
+  ],
+  "warnings": []
+}
+```
 
 ## Key Dependencies
 
