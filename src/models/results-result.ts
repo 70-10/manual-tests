@@ -86,27 +86,3 @@ export interface ReportGenerateErrorResult {
 
 export type ReportGenerateResult = ReportGenerateSuccessResult | ReportGenerateErrorResult;
 
-// Clean up types
-export interface CleanupInput {
-  resultsDir: string;
-  olderThanDays?: number;
-  keepCount?: number; // Keep N most recent results
-  status?: ('passed' | 'failed' | 'skipped' | 'pending')[]; // Only clean specific statuses
-  dryRun?: boolean; // Don't actually delete, just report what would be deleted
-}
-
-export interface CleanupSuccessResult {
-  success: true;
-  deletedDirectories: string[];
-  deletedFiles: string[];
-  freedSpace: number; // in bytes
-  keptResults: number;
-  message: string;
-}
-
-export interface CleanupErrorResult {
-  success: false;
-  error: string;
-}
-
-export type CleanupResult = CleanupSuccessResult | CleanupErrorResult;

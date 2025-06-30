@@ -5,4 +5,6 @@ export * from './list-result';
 export * from './create-result';
 export * from './init-result';
 export * from './results-result';
+export * from './report-result';
+export * from './clean-result';
 export * from './common';
