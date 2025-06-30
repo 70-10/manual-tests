@@ -1,66 +1,129 @@
 import * as yaml from 'js-yaml';
 import { z } from 'zod';
 
-// Zod schema for test case validation
-const TestCaseSchema = z.object({
-  meta: z.object({
-    id: z.string().regex(/^TC-[A-Z-]+-\d+$/, 'ID format must be TC-[A-Z-]+-[NUMBER]'),
-    title: z.string().min(1, 'Title is required'),
-    feature: z.string().optional(),
-    priority: z.enum(['high', 'medium', 'low'], {
-      errorMap: () => ({ message: 'Priority must be one of: high, medium, low' })
-    }),
-    tags: z.array(z.string()).optional(),
-    author: z.string().optional(),
-    lastUpdated: z.union([z.string(), z.date()]).optional()
-  }),
-  precondition: z.array(z.string()).optional(),
-  scenario: z.object({
-    given: z.array(z.string()).min(1, 'Given cannot be empty'),
-    when: z.array(z.string()).min(1, 'When cannot be empty'), 
-    then: z.array(z.string()).min(1, 'Then cannot be empty')
-  }),
-  notes: z.string().optional()
-});
+// Type definitions
+export type Priority = 'high' | 'medium' | 'low';
+
+export interface TestCase {
+  meta: {
+    id: string;
+    title: string;
+    feature?: string;
+    priority: Priority;
+    tags?: string[];
+    author?: string;
+    lastUpdated?: string | Date;
+  };
+  precondition?: string[];
+  scenario: {
+    given: string[];
+    when: string[];
+    then: string[];
+  };
+  notes?: string;
+}
 
 export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
-  parsedData?: any;
+  parsedData?: TestCase;
 }
 
-export function validateTestCase(yamlContent: string): ValidationResult {
-  const result: ValidationResult = {
+// Schema definitions
+const MetaSchema = z.object({
+  id: z.string().regex(/^TC-[A-Z-]+-\d+$/, 'ID format must be TC-[A-Z-]+-[NUMBER]'),
+  title: z.string().min(1, 'Title is required'),
+  feature: z.string().optional(),
+  priority: z.enum(['high', 'medium', 'low'], {
+    errorMap: () => ({ message: 'Priority must be one of: high, medium, low' })
+  }),
+  tags: z.array(z.string()).optional(),
+  author: z.string().optional(),
+  lastUpdated: z.union([z.string(), z.date()]).optional()
+});
+
+const ScenarioSchema = z.object({
+  given: z.array(z.string()).min(1, 'Given cannot be empty'),
+  when: z.array(z.string()).min(1, 'When cannot be empty'),
+  then: z.array(z.string()).min(1, 'Then cannot be empty')
+});
+
+const TestCaseSchema = z.object({
+  meta: MetaSchema,
+  precondition: z.array(z.string()).optional(),
+  scenario: ScenarioSchema,
+  notes: z.string().optional()
+});
+
+/**
+ * Parse YAML content safely
+ */
+function parseYaml(yamlContent: string): { success: true; data: unknown } | { success: false; error: string } {
+  try {
+    const data = yaml.load(yamlContent);
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof yaml.YAMLException) {
+      return { success: false, error: `YAML syntax error: ${error.message}` };
+    }
+    const message = error instanceof Error ? error.message : 'Unknown parsing error';
+    return { success: false, error: `Validation error: ${message}` };
+  }
+}
+
+/**
+ * Validate parsed data against schema
+ */
+function validateSchema(data: unknown): { success: true; data: TestCase } | { success: false; errors: string[] } {
+  const validation = TestCaseSchema.safeParse(data);
+  
+  if (validation.success) {
+    return { success: true, data: validation.data };
+  }
+  
+  const errors = validation.error.errors.map(error => {
+    const path = error.path.join('.');
+    return `${path}: ${error.message}`;
+  });
+  
+  return { success: false, errors };
+}
+
+/**
+ * Create initial validation result
+ */
+function createValidationResult(): ValidationResult {
+  return {
     isValid: true,
     errors: [],
     warnings: []
   };
+}
 
-  try {
-    // Parse YAML
-    const parsedData = yaml.load(yamlContent);
-    result.parsedData = parsedData;
+/**
+ * Validate a test case YAML content
+ */
+export function validateTestCase(yamlContent: string): ValidationResult {
+  const result = createValidationResult();
 
-    // Validate schema
-    const validation = TestCaseSchema.safeParse(parsedData);
-    
-    if (!validation.success) {
-      result.isValid = false;
-      validation.error.errors.forEach(error => {
-        const path = error.path.join('.');
-        result.errors.push(`${path}: ${error.message}`);
-      });
-    }
-
-  } catch (error) {
+  // Parse YAML
+  const parseResult = parseYaml(yamlContent);
+  if (!parseResult.success) {
     result.isValid = false;
-    if (error instanceof yaml.YAMLException) {
-      result.errors.push(`YAML syntax error: ${error.message}`);
-    } else {
-      result.errors.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    result.errors.push(parseResult.error);
+    return result;
   }
 
+  // Validate schema
+  const schemaResult = validateSchema(parseResult.data);
+  if (!schemaResult.success) {
+    result.isValid = false;
+    result.errors.push(...schemaResult.errors);
+    return result;
+  }
+
+  // Success
+  result.parsedData = schemaResult.data;
   return result;
 }
