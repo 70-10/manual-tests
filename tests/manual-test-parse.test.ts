@@ -59,9 +59,9 @@ scenario:
   given:
     - 今日は {{today}} です
   when:
-    - "{{today}}" の記録を確認する
+    - '{{today}} の記録を確認する'
   then:
-    - "{{today}}" が表示されること
+    - '{{today}} が表示されること'
 `;
 
       const result = parseTestCase(yamlContent);
@@ -70,8 +70,8 @@ scenario:
       if (result.success) {
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         expect(result.processedSteps.given[0]).toBe(`今日は ${today} です`);
-        expect(result.processedSteps.when[0]).toBe(`"${today}" の記録を確認する`);
-        expect(result.processedSteps.then[0]).toBe(`"${today}" が表示されること`);
+        expect(result.processedSteps.when[0]).toBe(`${today} の記録を確認する`);
+        expect(result.processedSteps.then[0]).toBe(`${today} が表示されること`);
       }
     });
 
@@ -108,10 +108,10 @@ scenario:
   given:
     - ユーザー {{test_data.users.valid_user.username}} でログイン準備
   when:
-    - "{{test_data.users.valid_user.username}}" でログインする
-    - パスワード "{{test_data.users.valid_user.password}}" を入力
+    - '{{test_data.users.valid_user.username}} でログインする'
+    - 'パスワード {{test_data.users.valid_user.password}} を入力'
   then:
-    - "{{test_data.users.valid_user.email}}" が表示されること
+    - '{{test_data.users.valid_user.email}} が表示されること'
 `;
 
       const projectMeta = {
@@ -131,9 +131,9 @@ scenario:
 
       if (result.success) {
         expect(result.processedSteps.given[0]).toBe('ユーザー test_user でログイン準備');
-        expect(result.processedSteps.when[0]).toBe('"test_user" でログインする');
-        expect(result.processedSteps.when[1]).toBe('パスワード "test_password123" を入力');
-        expect(result.processedSteps.then[0]).toBe('"test@example.com" が表示されること');
+        expect(result.processedSteps.when[0]).toBe('test_user でログインする');
+        expect(result.processedSteps.when[1]).toBe('パスワード test_password123 を入力');
+        expect(result.processedSteps.then[0]).toBe('test@example.com が表示されること');
       }
     });
 
@@ -147,7 +147,7 @@ scenario:
   given:
     - ブラウザを開いていない状態
   when:
-    - ブラウザで "{{environments.production}}" にアクセスする
+    - 'ブラウザで {{environments.production}} にアクセスする'
   then:
     - ページが正しく表示されること
 `;
@@ -163,7 +163,7 @@ scenario:
       expect(result.success).toBe(true);
 
       if (result.success) {
-        expect(result.processedSteps.when[0]).toBe('ブラウザで "https://example.com" にアクセスする');
+        expect(result.processedSteps.when[0]).toBe('ブラウザで https://example.com にアクセスする');
       }
     });
 
