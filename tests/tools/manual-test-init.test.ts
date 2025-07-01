@@ -135,7 +135,7 @@ describe('manual-test-init', () => {
         expect(content).toContain('sample_product:');
       });
 
-      it('MCP設定ファイルを作成する', async () => {
+      it('mcpConfig オプションが設定されても .mcp.json ファイルは作成されない', async () => {
         const input: InitProjectInput = {
           projectName: 'test-project',
           baseUrl: 'https://example.com',
@@ -146,18 +146,12 @@ describe('manual-test-init', () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          expect(result.createdFiles).toContain('.mcp.json');
+          expect(result.createdFiles).not.toContain('.mcp.json');
         }
 
         const mcpConfigPath = '.mcp.json';
         const exists = await fs.pathExists(mcpConfigPath);
-        expect(exists).toBe(true);
-
-        const content = await fs.readFile(mcpConfigPath, 'utf-8');
-        const config = JSON.parse(content);
-        expect(config.mcpServers).toBeDefined();
-        expect(config.mcpServers['manual-tests']).toBeDefined();
-        expect(config.mcpServers['manual-tests'].type).toBe('stdio');
+        expect(exists).toBe(false);
       });
     });
 
@@ -322,23 +316,6 @@ describe('manual-test-init', () => {
         expect(content).toContain('username_field:');
       });
 
-      it('MCP設定が正しく生成される', async () => {
-        const input: InitProjectInput = {
-          projectName: 'mcp-test',
-          baseUrl: 'https://mcp.com',
-          mcpConfig: true
-        };
-
-        const result = await initProject(input);
-
-        expect(result.success).toBe(true);
-
-        const content = await fs.readFile('.mcp.json', 'utf-8');
-        const config = JSON.parse(content);
-        
-        expect(config.mcpServers['manual-tests'].command).toBe('npx');
-        expect(config.mcpServers['manual-tests'].args).toContain('github:70-10/manual-tests-mcp');
-      });
     });
   });
 });

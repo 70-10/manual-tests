@@ -93,8 +93,7 @@ export class DirectoryStructure {
     return {
       projectMeta: 'tests/manual-tests/project-meta.yml',
       readme: 'tests/manual-tests/README.md',
-      template: 'tests/manual-tests/templates/test-case-template.yml',
-      mcpConfig: '.mcp.json'
+      template: 'tests/manual-tests/templates/test-case-template.yml'
     };
   }
 }
