@@ -8,7 +8,6 @@ import type { InitProjectInput } from '../../models';
 export interface FileContentGenerator {
   generateReadme(input: InitProjectInput): string;
   generateTestCaseTemplate(): string;
-  generateMcpConfig(): object;
 }
 
 /**
@@ -162,17 +161,6 @@ notes: |
 `;
   }
 
-  generateMcpConfig(): object {
-    return {
-      mcpServers: {
-        'manual-tests': {
-          type: 'stdio',
-          command: 'npx',
-          args: ['github:70-10/manual-tests-mcp']
-        }
-      }
-    };
-  }
 }
 
 // Default generator instance

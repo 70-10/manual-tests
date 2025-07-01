@@ -129,15 +129,6 @@ describe('manual-test-init refactored components', () => {
       expect(template).toContain('{{test_data.users.valid_user.username}}');
     });
 
-    it('should generate MCP config', () => {
-      const config = generator.generateMcpConfig();
-
-      expect(config).toHaveProperty('mcpServers');
-      expect(config).toHaveProperty('mcpServers.manual-tests');
-      expect((config as any).mcpServers['manual-tests'].type).toBe('stdio');
-      expect((config as any).mcpServers['manual-tests'].command).toBe('npx');
-      expect((config as any).mcpServers['manual-tests'].args).toContain('github:70-10/manual-tests-mcp');
-    });
   });
 
   describe('InitInputValidator', () => {
@@ -264,7 +255,6 @@ describe('manual-test-init refactored components', () => {
       expect(paths.projectMeta).toBe('tests/manual-tests/project-meta.yml');
       expect(paths.readme).toBe('tests/manual-tests/README.md');
       expect(paths.template).toBe('tests/manual-tests/templates/test-case-template.yml');
-      expect(paths.mcpConfig).toBe('.mcp.json');
     });
   });
 });

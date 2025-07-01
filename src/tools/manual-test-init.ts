@@ -50,12 +50,8 @@ export async function initProject(input: InitProjectInput): Promise<InitResult> 
     await defaultFileSystemManager.writeTextFile(filePaths.template, templateContent);
     createdFiles.push(filePaths.template);
 
-    // Create MCP config if requested
-    if (input.mcpConfig) {
-      const mcpConfig = defaultFileContentGenerator.generateMcpConfig();
-      await defaultFileSystemManager.writeJsonFile(filePaths.mcpConfig, mcpConfig);
-      createdFiles.push(filePaths.mcpConfig);
-    }
+    // Note: MCP config generation has been disabled to prevent overwriting existing .mcp.json files
+    // Users should manually configure their .mcp.json file according to the README instructions
 
     return {
       success: true,
