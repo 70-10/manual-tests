@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -51,3 +55,10 @@ jobs:
         name: coverage-reports
         path: coverage/
         retention-days: 30
+    
+    - name: Report Coverage
+      uses: davelosert/vitest-coverage-report-action@v2
+      if: matrix.node-version == '22.x'
+      with:
+        json-summary-path: './coverage/coverage-summary.json'
+        json-final-path: './coverage/coverage-final.json'
