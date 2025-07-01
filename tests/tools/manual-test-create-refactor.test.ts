@@ -55,7 +55,7 @@ describe('manual-test-create refactored components', () => {
         const generator = new TimestampIdGenerator();
         const id1 = generator.generateId('login');
         // Small delay to ensure different timestamp
-        await new Promise(resolve => setTimeout(resolve, 1));
+        await new Promise(resolve => setTimeout(resolve, 2));
         const id2 = generator.generateId('login');
 
         expect(id1).not.toBe(id2);
